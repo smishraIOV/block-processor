@@ -13,7 +13,7 @@ public class CallAnalyzer extends RskBlockProcessor {
     }
 
     @Override
-    public void process() {
+    public void processBlock() {
         for (Transaction transaction : this.currentBlock.getTransactionsList()) {
             byte[] code = trie.get(trieKeyMapper.getCodeKey(transaction.getReceiveAddress()));
             byte[] data = transaction.getData();
