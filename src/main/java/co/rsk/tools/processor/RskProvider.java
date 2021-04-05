@@ -52,7 +52,7 @@ public class RskProvider {
 
         for (long blockNumber = minBlock; blockNumber < maxBlock; blockNumber++) {
             blockProcessor.setState(blockNumber);
-            blockProcessor.process();
+            blockProcessor.processBlock();
         }
     }
 
