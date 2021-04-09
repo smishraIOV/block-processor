@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /*************************************************************************
- * This class analyzes the transaction volume per day at different poitns
+ * This class analyzes the transaction volume per day at different points
  * in RSK history. It dumps two values: transactions/day including REMASC
  * transactions, and transactions/day excluding REMASC transactions.
  * By SDL.

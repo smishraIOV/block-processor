@@ -19,4 +19,4 @@ This Analyzer scans the storage trie and counts accounts, contracts, and other m
 This class counts the number of contract calls made by EOAs in some period.
 
 ## TransactionVolumeAnalyzer
-This class analyzes the transaction volume per day at different poitns in RSK history. It dumps two values: transactions/day including REMASC transactions, and transactions/day excluding REMASC transactions.
+This class analyzes the transaction volume per day at different points in RSK history. It dumps two values: transactions/day including REMASC transactions, and transactions/day excluding REMASC transactions.
