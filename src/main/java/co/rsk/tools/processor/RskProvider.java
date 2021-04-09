@@ -1,8 +1,11 @@
 package co.rsk.tools.processor;
 
 import co.rsk.RskContext;
+import co.rsk.config.ConfigLoader;
+import co.rsk.config.RskSystemProperties;
 import co.rsk.core.Coin;
 import co.rsk.core.RskAddress;
+import co.rsk.crypto.Keccak256;
 import co.rsk.trie.Trie;
 import org.ethereum.core.AccountState;
 import org.ethereum.core.Block;
@@ -25,35 +28,69 @@ public class RskProvider {
     private Trie trie;
     private long minBlock;
     private long maxBlock;
+    private long step;
 
     public RskProvider(String rskArgs[]) {
         this.ctx = new RskContext(rskArgs);
-        init(ctx.getBlockStore().getMinNumber(), ctx.getBlockStore().getMaxNumber());
+        init(ctx.getBlockStore().getMinNumber(), ctx.getBlockStore().getMaxNumber(),1);
+    }
+
+
+
+    public RskProvider(String rskArgs[], long minBlock, long maxBlock,long step) {
+        //this.ctx = new RskContext(rskArgs);
+        this.ctx  = new RskContext(rskArgs) {
+            @Override
+            protected RskSystemProperties buildRskSystemProperties() {
+                return new RskSystemProperties(new ConfigLoader(this.getCliArgs())) {
+                    public String databaseDir() {
+                        return "C:\\Shared\\database\\mainnet";
+                    }
+
+                };
+            }
+        };
+        init(minBlock, maxBlock,step);
     }
 
     public RskProvider(String rskArgs[], long minBlock, long maxBlock) {
         this.ctx = new RskContext(rskArgs);
-        init(minBlock, maxBlock);
+        init(minBlock, maxBlock,1);
     }
 
     public static BigDecimal toBTC(Coin wei) {
         return new BigDecimal(wei.asBigInteger()).divide(RskProvider.WEI);
     }
 
-    private void init(long minBlock, long maxBlock) {
+    private void init(long minBlock, long maxBlock, long step) {
         this.trieKeyMapper = new TrieKeyMapper();
         this.minBlock = Long.max(minBlock, 1); // skip the genesis block
         this.maxBlock = Long.min(ctx.getBlockStore().getMaxNumber(), maxBlock);
-        this.trie = getTrie(this.maxBlock);
+        this.step = step;
+        this.trie = null; // no need to load it in advance
     }
 
+    public void loadTrie() {
+        this.trie = getTrie(minBlock);
+
+    }
     public void processBlockchain(RskBlockProcessor blockProcessor) {
         blockProcessor.setContext(ctx);
-
-        for (long blockNumber = minBlock; blockNumber < maxBlock; blockNumber++) {
+        blockProcessor.begin();
+        long prevPercent =0;
+        System.out.println("Processing started");
+        for (long blockNumber = minBlock; blockNumber < maxBlock; blockNumber +=step) {
             blockProcessor.setState(blockNumber);
-            blockProcessor.processBlock();
+            this.trie =blockProcessor.trie;
+            long percent = (blockNumber-minBlock)*100/(maxBlock-minBlock);
+            if (percent>prevPercent) {
+                System.out.println("Processing: "+blockNumber+" ("+percent+"%)");
+                prevPercent = percent;
+            }
+            if (!blockProcessor.processBlock()) break;
         }
+        System.out.println("Processing finished");
+        blockProcessor.end();
     }
 
     public Coin getCirculatingSupply() {
@@ -76,7 +113,11 @@ public class RskProvider {
 
     private Trie getTrie(long blockNumber) {
         Block block = getBlock(blockNumber);
-        Optional<Trie> otrie = ctx.getTrieStore().retrieve(block.getStateRoot());
+        if (block==null)
+            throw new RuntimeException("Block not found: " + blockNumber);
+        //ctx.getRepositoryLocator().startTrackingAt()
+        Keccak256 root =ctx.getStateRootHandler().translate(block.getHeader());
+        Optional<Trie> otrie = ctx.getTrieStore().retrieve(root.getBytes());
 
         if (otrie.isPresent()) {
             return otrie.get();

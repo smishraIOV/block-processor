@@ -1,6 +1,7 @@
 package co.rsk.tools.processor;
 
 import co.rsk.RskContext;
+import co.rsk.crypto.Keccak256;
 import co.rsk.trie.Trie;
 import org.ethereum.core.Block;
 import org.ethereum.db.TrieKeyMapper;
@@ -13,20 +14,35 @@ public abstract class RskBlockProcessor {
     protected Trie trie;
     protected Block currentBlock;
     protected TrieKeyMapper trieKeyMapper = new TrieKeyMapper();
+    protected boolean loadTrieForEachBlock = true;
 
-    public abstract void processBlock();
+    public abstract boolean processBlock();
 
+    public Trie getTrieAtCurrentBlock() {
+        return trie;
+    }
+
+    public void begin() {
+    }
+
+    public void end() {
+
+    }
     public void setContext(RskContext ctx) {
         this.ctx = ctx;
     }
 
     public void setState(long blockNumber) {
         currentBlock = ctx.getBlockStore().getChainBlockByNumber(blockNumber);
-        setTrie(blockNumber);
+
+        // set to false for if not needed
+        if (loadTrieForEachBlock)
+            setTrie(blockNumber);
     }
 
     private void setTrie(long blockNumber) {
-        Optional<Trie> otrie = ctx.getTrieStore().retrieve(currentBlock.getStateRoot());
+        Keccak256 root =ctx.getStateRootHandler().translate(currentBlock.getHeader());
+        Optional<Trie> otrie = ctx.getTrieStore().retrieve(root.getBytes());
 
         if (!otrie.isPresent()) {
             throw new RuntimeException("Trie for block " + blockNumber + " not found.");
