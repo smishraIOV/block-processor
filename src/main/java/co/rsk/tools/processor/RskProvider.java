@@ -18,7 +18,7 @@ import java.math.BigInteger;
 import java.util.Optional;
 
 public class RskProvider {
-
+    static String foreDatabaseDir = "";
     public static final String REMASC_BURNED_BALANCE_KEY = "burnedBalance";
     public static final Coin TOTAL_SUPPLY = new Coin(new BigInteger("21000000000000000000000000"));
     public static final BigDecimal WEI = new BigDecimal("1e18");
@@ -38,13 +38,15 @@ public class RskProvider {
 
 
     public RskProvider(String rskArgs[], long minBlock, long maxBlock,long step) {
-        //this.ctx = new RskContext(rskArgs);
+        if (foreDatabaseDir.equals("")) {
+            this.ctx = new RskContext(rskArgs);
+        } else
         this.ctx  = new RskContext(rskArgs) {
             @Override
             protected RskSystemProperties buildRskSystemProperties() {
                 return new RskSystemProperties(new ConfigLoader(this.getCliArgs())) {
                     public String databaseDir() {
-                        return "C:\\Shared\\database\\mainnet";
+                        return foreDatabaseDir;
                     }
 
                 };
