@@ -19,7 +19,6 @@ import java.util.Optional;
 
 public class RskProvider {
     static String foreDatabaseDir = "";
-    public static final String REMASC_BURNED_BALANCE_KEY = "burnedBalance";
     public static final Coin TOTAL_SUPPLY = new Coin(new BigInteger("21000000000000000000000000"));
     public static final BigDecimal WEI = new BigDecimal("1e18");
 
