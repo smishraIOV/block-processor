@@ -81,7 +81,8 @@ public class RskProvider {
         long prevPercent =0;
         System.out.println("Processing started");
         for (long blockNumber = minBlock; blockNumber < maxBlock; blockNumber +=step) {
-            blockProcessor.setState(blockNumber);
+            System.out.println("Processing block no " + blockNumber);
+	    blockProcessor.setState(blockNumber);
             this.trie =blockProcessor.trie;
             long percent = (blockNumber-minBlock)*100/(maxBlock-minBlock);
             if (percent>prevPercent) {

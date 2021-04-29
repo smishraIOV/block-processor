@@ -28,14 +28,14 @@ public class StorageAnalyzer  extends RskBlockProcessor {
 
     RskProvider provider;
 
-    File file;
-    FileWriter fileWriter;
+    static File file;
+    static FileWriter fileWriter;
 
     public void begin() {
-        createOutputFile();
+        //createOutputFile();
     }
 
-    public void createOutputFile() {
+    public static void createOutputFile() {
         try {
             file = new File("storage.csv");
             if (file.createNewFile()) {
@@ -376,10 +376,10 @@ public class StorageAnalyzer  extends RskBlockProcessor {
     }
 
     public void end() {
-        close();
+        //close();
     }
 
-    public void close() {
+    public static void close() {
         try {
             fileWriter.close();
         } catch (IOException e) {
@@ -388,13 +388,14 @@ public class StorageAnalyzer  extends RskBlockProcessor {
     }
 
     public static void main (String args[]) {
-        int maxBlockchainBlock = 3_210_000; // 3219985
-        int minBlock = maxBlockchainBlock;///1_600_001; //2_400_001;
-        int maxBlock = minBlock+1; // maxBlockchainBlock;
-        int step = 800_000;
+        int maxBlockchainBlock = 20;//3_210_000; // 3219985
+        int minBlock = 100;// maxBlockchainBlock;///1_600_001; //2_400_001;
+        int maxBlock = 200;//minBlock+1; // maxBlockchainBlock;
+        int step = 20;//800_000;
         RskProvider provider = new RskProvider(args,minBlock,maxBlock,step);
         StorageAnalyzer analyzer = new StorageAnalyzer(provider);
-        provider.processBlockchain(analyzer);
-
+        createOutputFile();
+	provider.processBlockchain(analyzer);
+	close();
     }
 }
